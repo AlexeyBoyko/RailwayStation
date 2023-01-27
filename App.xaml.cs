@@ -18,52 +18,66 @@ namespace RailwayStation
     {     
         // метод для получения произвольного простого пути в графе
         // используется для создания целостной обводки соединительных путей (при рисовании обводки отдельными линиями на поворотах возникают прорехи)
-        public static List<int> FindSimplePath(int[,] edges, int currentV, bool startPoint, HashSet<int> alreadyVisited, List<int> currentPath)
-    {        
+        public static List<int> FindSimplePath(int[,] edges, int currentV, bool startPoint, 
+                                                HashSet<int> alreadyVisited, List<int> currentPath)
+        {        
             alreadyVisited.Add(currentV);
             currentPath.Add(currentV);
+            // в общем случае строится два пути в разные стороны, если начальная точка не является конечной (т.е. не "лист" графа)
             List<int> oneSidePath = new List<int>(), otherSidePath = new List<int>();
             
             for (int i = 0; i < edges.GetLength(1); i++)
             {
                 if (i!=currentV && edges[currentV, i] == 1 && 
-                (startPoint || !alreadyVisited.Contains(i)))
+                // для начальной точки (первого уровня рекурсии) допустимо построение пути до уже посещённой вершины,
+                // т.к. к одной точке могут примыкать несколько разных путей
+                // однако на следующем уровне рекурсии обход остановится в этой точке
+                (startPoint || !alreadyVisited.Contains(i))) 
                 {
+                    // для начальной точки пробуем два направления обхода
                     if (startPoint)
                     {
-                    if(oneSidePath.Count==0)
-                    {
-                        oneSidePath = FindSimplePath(edges, i, false, alreadyVisited, currentPath);
+                        // сначала строим путь в одну сторону
+                        if(oneSidePath.Count==0)
+                        {
+                            oneSidePath = FindSimplePath(edges, i, false, alreadyVisited, currentPath);
+                        }
+                        // если первый путь уже построен, но есть ещё смежные точки, тогда продолжаем строить в другую сторону
+                        else 
+                        {
+                            currentPath = new List<int>();
+                            otherSidePath = FindSimplePath(edges, i, false, alreadyVisited, currentPath);
+                        }                    
                     }
-                    else 
-                    {
-                        currentPath = new List<int>();
-                        otherSidePath = FindSimplePath(edges, i, false, alreadyVisited, currentPath);
-                    }                    
-                    }
+                    // для последующих вершин направление обхода м.б. только одно, 
+                    // поэтому продолжаем рекурсивный обход в глубину
                     else
                     {
                         return FindSimplePath(edges, i, false, alreadyVisited, currentPath);
                     }
                 }
             }
-            if(oneSidePath.Count == 0)
+            // возврат параметра из рекурсии
+            if (startPoint == false) 
             {
                 return currentPath;
             }
+            // на первом уровне (для начальной точки) при необходимости соединяем найденные разнонаправленные пути            
             else
             {                
                 if (otherSidePath.Count!=0)
                 {
+                    // поворот начального пути в обратном направлении
                     oneSidePath.Reverse();
-                foreach(var point in otherSidePath)
-                {
-                    oneSidePath.Add(point);
-                }
+                    // наращиваем развернутый начальный путь вершинами из дополнительного
+                    foreach(var point in otherSidePath)
+                    {
+                        oneSidePath.Add(point);
+                    }
                 }
                 return oneSidePath;
             }
-    }   
+        }   
         public static Point[] InitPoints()
         {
             return new Point[] { new(0, 10), new(10, 10), new(170, 10), new(180, 20), new(200, 20), new(210, 40), new(220, 40),
@@ -339,7 +353,7 @@ namespace RailwayStation
         }
 
         /// <summary>
-        /// Согласно теории о расположении точек относительно прямой 
+        /// Согласно теореме о расположении точек относительно прямой 
         /// уравнение прямой с подставленными в него координатами некоторой точки даст: 
         /// - положительное значение в случае нахождения точки в одной полуплоскости 
         /// - отрицательное если точка лежит в другой полуплоскости
@@ -423,6 +437,9 @@ namespace RailwayStation
         }
     }
 }
+// метод для соединения двух смежных линий
+// может быть использован для построения путей при наличии матрицы инцидентности графа
+// для этого необходимо в каждой вершине хранить информацию о линиях через неё проходящих
 /*public static List<Point> ConnectPairOfLines(Line line1, Line line2)
     {
         Point[] points1 = line1.points, points2 = line2.points;

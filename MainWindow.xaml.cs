@@ -51,7 +51,7 @@ namespace RailwayStation
             var park = new Park(scaleFactor);
             DrawParkLabelOutline(park, fillVariants.Keys.ElementAt(0));
             
-            // клонируем парк со смещением
+            // клонируем первый парк со смещением вправо вниз на 90
             var park2 = park.CreateCopyWithShift(x: 90, y: 90);
             DrawParkLabelOutline(park2, fillVariants.Keys.ElementAt(1));
         }
