@@ -1,0 +1,53 @@
+﻿<Window x:Class="RailwayStation.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:RailwayStation"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid x:Name="grid1" MouseWheel="Grid_MouseWheel">        
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="100"></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <ComboBox Grid.Column="0" 
+                  Grid.Row="0" 
+                  Text="Цвет" 
+                  Width="100" 
+                  Height="30" 
+                  VerticalAlignment="Top" 
+                  HorizontalAlignment="Left" 
+                  Margin="20"
+                  SelectionChanged="Color_Selected"
+                  SelectedValuePath="SelectedItem"
+                  SelectedIndex="0">                  
+            <ComboBoxItem>Цвет</ComboBoxItem>
+            <ComboBoxItem>Зелёный</ComboBoxItem>
+            <ComboBoxItem>Красный</ComboBoxItem>
+            <ComboBoxItem>Синий</ComboBoxItem>
+        </ComboBox>
+        <ComboBox Grid.Column="1" 
+                  Grid.Row="0" 
+                  Text="Вариант заливки" 
+                  Width="100" 
+                  Height="30" 
+                  VerticalAlignment="Top" 
+                  HorizontalAlignment="Right" 
+                  Margin="20"
+                  SelectionChanged="FillVariant_Selected"
+                  SelectedValuePath="SelectedItem"
+                  x:Name="comboFillVariant"
+                  SelectedIndex="0">                  
+            <ComboBoxItem>Вариант заливки</ComboBoxItem>
+            <ComboBoxItem>Парк 1</ComboBoxItem>
+            <ComboBoxItem>Парк 2</ComboBoxItem>            
+        </ComboBox>
+        <Canvas Grid.Column="0" Grid.Row="1" x:Name="canvas1">
+
+        </Canvas>
+    </Grid>
+</Window>
