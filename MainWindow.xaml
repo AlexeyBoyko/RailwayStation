@@ -21,14 +21,25 @@
                   Height="30" 
                   VerticalAlignment="Top" 
                   HorizontalAlignment="Left" 
-                  Margin="20"
-                  SelectionChanged="Color_Selected"
-                  SelectedValuePath="SelectedItem"
-                  SelectedIndex="0">                  
-            <ComboBoxItem>Цвет</ComboBoxItem>
-            <ComboBoxItem>Зелёный</ComboBoxItem>
-            <ComboBoxItem>Красный</ComboBoxItem>
-            <ComboBoxItem>Синий</ComboBoxItem>
+                  Margin="20"                  
+                  DisplayMemberPath="Name"
+                  ItemsSource="{Binding ColorItems}"                   
+                  SelectedItem="{Binding SelectedColorItem}"                  
+                  SelectedIndex="0"
+                  SelectionChanged="ColorSelectedHandler">                  
+            <!--                 
+                x:Name="comboColor"                
+                SelectedItem="{Binding SelectedColorItem, Mode=OneWayToSource}"
+                SelectedValuePath="SelectedItem"                
+                <ComboBoxItem>Цвет</ComboBoxItem>            
+            <ComboBox.ItemTemplate>  
+                <DataTemplate>  
+                    <StackPanel Orientation="Horizontal">                          
+                        <TextBlock Text="{Binding Path=Name}"/>  
+                    </StackPanel>  
+                </DataTemplate>  
+            </ComboBox.ItemTemplate> -->
+            
         </ComboBox>
         <ComboBox Grid.Column="1" 
                   Grid.Row="0" 
@@ -38,7 +49,7 @@
                   VerticalAlignment="Top" 
                   HorizontalAlignment="Right" 
                   Margin="20"
-                  SelectionChanged="FillVariant_Selected"
+                  SelectionChanged="FillVariantSelectedHandler"
                   SelectedValuePath="SelectedItem"
                   x:Name="comboFillVariant"
                   SelectedIndex="0">                  

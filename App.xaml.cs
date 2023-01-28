@@ -151,11 +151,21 @@ namespace RailwayStation
             new(points[13], points[14], true),
         };
         }
+    }    
+    public class ColorItem
+    {
+        //private string name;
+        public string Name { set; get; }
+        public SolidColorBrush brush;        
     }
     public class Park
     {
-        private double scaleFactor;
-        private List<int> outerLoop;        
+        private Polygon outline;
+        public Polygon Outline
+        {
+            get { return outline; }
+        }
+        private double scaleFactor;        
         private readonly Point[] points;
         private readonly Line[] lines;        
         public Park(double scaleFactor) : this(App.InitPoints(), scaleFactor)
@@ -165,8 +175,8 @@ namespace RailwayStation
         {
             this.scaleFactor = scaleFactor;
             this.points = points;            
-            lines = App.InitLines(points);                        
-            FindOuterLoop();
+            lines = App.InitLines(points);                                    
+            InitOutline();
         }
         
         public Park CreateCopyWithShift(int x, int y)
@@ -219,7 +229,6 @@ namespace RailwayStation
                 adjacencyMatrix[pointA, pointB] = 1;
                 adjacencyMatrix[pointB, pointA] = 1;
             }
-
             var alreadyVisited = new HashSet<int>();
             foreach (var passPoint in passPoints)
             {
@@ -245,9 +254,9 @@ namespace RailwayStation
             return uIElements;  
         }
         // обход по внешнему периметру графа по часовой стрелке посредством выбора всегда самого левого "соседа"
-        private void FindOuterLoop()
-        {            
-            outerLoop = new List<int>();
+        private List<int> FindOuterLoop()
+        {   
+            List<int> outerLoop = new List<int>();
             // берём произвольный "лист" графа (точка на перегоне, не относящаяся к станции)        
             Point a = points.Where(n => n.Neighbors.Count == 1).First();
             // находим входную стрелку
@@ -260,16 +269,17 @@ namespace RailwayStation
                 a = b;
                 b = p;
             }
-            while (b != begin);         
+            while (b != begin); 
+            return outerLoop;        
         }
         // Инициализация внешнего контура парка для последующей заливки выбранным цветом
-        public Polygon InitPolygon() 
+        private void InitOutline() 
         {
-            Polygon parkField = new Polygon();            
+            List<int> outerLoop = FindOuterLoop();
+            outline = new Polygon();            
             var winPoints = outerLoop.Select(p => new System.Windows.Point(points[p].X, points[p].Y));
             var outerLoopPointCollection = new PointCollection(winPoints);                        
-            parkField.Points = outerLoopPointCollection;            
-            return parkField;
+            outline.Points = outerLoopPointCollection;                        
         }
     }
     

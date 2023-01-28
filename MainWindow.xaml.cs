@@ -15,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Collections.ObjectModel;
 
 namespace RailwayStation
 {
@@ -23,14 +24,8 @@ namespace RailwayStation
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly Dictionary<string, SolidColorBrush> colorBrushes = new Dictionary<string, SolidColorBrush>()
-        {
-            ["Зелёный"] = Brushes.LightGreen,            
-            ["Синий"] = Brushes.LightBlue,
-            ["Красный"] = Brushes.LightCoral
-        };       
-
-        private string selectedColor;
+        public ObservableCollection<ColorItem> ColorItems { set; get; }
+        public ColorItem SelectedColorItem { set; get; }        
         private Dictionary<string, Polygon> fillVariants = new Dictionary<string, Polygon>()
         {
             ["Парк 1"] = null,            
@@ -42,8 +37,11 @@ namespace RailwayStation
         // динамически изменяемый масштаб
         static double dynamicScaleFactor = 1.0;        
         public MainWindow()
-        {            
-            InitializeComponent();
+        {   
+            prepareBindColorsCombo();
+            this.DataContext = this;                     
+            InitializeComponent();            
+            
 
             // увеличиваем масштаб изначальной схемы (задаём множитель для координат)
             Point.scaleFactor = scaleFactor;
@@ -55,11 +53,19 @@ namespace RailwayStation
             var park2 = park.CreateCopyWithShift(x: 90, y: 90);
             DrawParkLabelOutline(park2, fillVariants.Keys.ElementAt(1));
         }
+        private void prepareBindColorsCombo()
+        {
+             ColorItems = new ObservableCollection<ColorItem>();
+             ColorItems.Add(new ColorItem{ Name = "Цвет" });
+             ColorItems.Add(new ColorItem{ Name = "Зелёный", brush = Brushes.LightGreen });
+             ColorItems.Add(new ColorItem{ Name = "Синий", brush = Brushes.LightBlue });
+             ColorItems.Add(new ColorItem{ Name = "Красный", brush = Brushes.LightCoral });
+        }
         // Рисование элементов парка, подпись и подготовка внешнего контура для последующей заливки
         private void DrawParkLabelOutline(Park park, string parkKey)
         {
             // вычисление и сохранение внешнего контура
-            Polygon parkField = park.InitPolygon();
+            Polygon parkField = park.Outline;
             fillVariants[parkKey] = parkField;            
             canvas1.Children.Add(parkField);
             
@@ -79,33 +85,30 @@ namespace RailwayStation
                 canvas1.Children.Add(uIElement);
             }
         }
-        private void Color_Selected(object sender, RoutedEventArgs e)
-        {
-            var comboBox = (ComboBox)sender;
-            var selectedItem = (comboBox.SelectedItem as ComboBoxItem).Content.ToString();
-            if (selectedItem == (comboBox.Items.GetItemAt(0) as ComboBoxItem).Content.ToString())
+        private void ColorSelectedHandler(object sender, RoutedEventArgs e)
+        {            
+            // заглушка до первичной инициализации
+            if (comboFillVariant!=null)
             {
-                selectedColor = null;
-            }
-            else
-            {
-                selectedColor = selectedItem;
-            }
-            if (comboFillVariant != null)
-            {
-                FillVariant_Selected(comboFillVariant);
-            }
+                FillCleanSelectedVariant(comboFillVariant);
+            }             
         }
 
-        private void FillVariant_Selected(object sender, RoutedEventArgs e)
+        private void FillVariantSelectedHandler(object sender, RoutedEventArgs e)
         {
             var comboBox = (ComboBox)sender;                                    
-            FillVariant_Selected(comboBox);
+            FillCleanSelectedVariant(comboBox);
         }
-        private void FillVariant_Selected(ComboBox comboBox)
-        {            
+        // заливка выбранного варианта и очистка невыбранных
+        private void FillCleanSelectedVariant(ComboBox comboBox)
+        {
+            // заглушка до первичной инициализации
+            if (comboBox==null)
+            {
+                return;
+            }                        
             var selectedItem = (comboBox.SelectedItem as ComboBoxItem).Content.ToString();
-            if (selectedColor == null || selectedItem == (comboBox.Items.GetItemAt(0) as ComboBoxItem).Content.ToString())
+            if (SelectedColorItem.Name == "Цвет" || selectedItem == (comboBox.Items.GetItemAt(0) as ComboBoxItem).Content.ToString())
             {                
                 foreach(var fillVariant in fillVariants)
                 {
@@ -118,7 +121,7 @@ namespace RailwayStation
             }
             else
             {
-                fillVariants[selectedItem].Fill = colorBrushes[selectedColor];
+                fillVariants[selectedItem].Fill = SelectedColorItem.brush;
                 string otherKey = fillVariants.Keys.Where(k => k!=selectedItem).Single();
                 fillVariants[otherKey].Fill = null;            
             }
