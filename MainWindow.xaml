@@ -48,13 +48,13 @@
                   VerticalAlignment="Top" 
                   HorizontalAlignment="Right" 
                   Margin="20"
-                  SelectionChanged="FillVariantSelectedHandler"
-                  SelectedValuePath="SelectedItem"
+                  DisplayMemberPath="Name"
+                  ItemsSource="{Binding FillVariants}"                   
+                  SelectedItem="{Binding SelectedFillVariant}"                                    
                   x:Name="comboFillVariant"
                   SelectedIndex="0">                  
-            <ComboBoxItem>Вариант заливки</ComboBoxItem>
-            <ComboBoxItem>Парк 1</ComboBoxItem>
-            <ComboBoxItem>Парк 2</ComboBoxItem>            
+                  <!--SelectionChanged="FillVariantSelectedHandler"
+                  SelectedValuePath="SelectedItem"-->         
         </ComboBox>
         <Canvas Grid.Column="0" Grid.Row="1" x:Name="canvas1">
 

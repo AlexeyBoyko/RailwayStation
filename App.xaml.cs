@@ -89,7 +89,8 @@ namespace RailwayStation
         public static Line[] InitLines(Point[] points)
         {
             // инициализируем линии станционного парка
-            return new Line[] {
+            return new Line[] 
+            {
 
 #region перегоны между станциями (магистральные линии)
             new(points[0], points[1]),
@@ -149,14 +150,34 @@ namespace RailwayStation
             
             // соединительная линия отдельная от стрелочной улицы
             new(points[13], points[14], true),
-        };
+            };
         }
     }    
     public class ColorItem
-    {
-        //private string name;
+    {        
         public string Name { set; get; }
         public SolidColorBrush brush;        
+    }
+    public class FillVariant
+    {
+        private Polygon parkField;
+        public string Name { set; get; }
+        public Polygon ParkField
+        {    
+            // геттер специально не делаем, чтобы не было попыток работы с неициализированным объектом        
+            set 
+            {
+                parkField = value;
+            }          
+        }
+        // метод для заливки с предварительной проверкой на null
+        public void CheckSetFilling(SolidColorBrush brush)
+        {
+            if (parkField!=null)
+            {
+                parkField.Fill = brush;
+            }
+        }
     }
     public class Park
     {

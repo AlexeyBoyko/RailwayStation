@@ -26,25 +26,34 @@ namespace RailwayStation
     {
         public ObservableCollection<ColorItem> ColorItems { set; get; }
         private ColorItem selectedColorItem;
-        public ColorItem SelectedColorItem {             
+        public ColorItem SelectedColorItem 
+        {             
             set
             {
                 if (value != selectedColorItem)
+                {
+                    selectedColorItem = value;
+                    // InitializeComponent инициализирует comboFillVariant позже чем comboColor
+                    if (comboFillVariant!=null)
                     {
-                        selectedColorItem = value;
-                        // InitializeComponent инициализирует comboFillVariant позже чем comboColor
-                        if (comboFillVariant!=null)
-                        {
                             FillCleanSelectedVariant(comboFillVariant);
-                        }
                     }
+                }
             }  
-        }        
-        private Dictionary<string, Polygon> fillVariants = new Dictionary<string, Polygon>()
+        }
+        public ObservableCollection<FillVariant> FillVariants { set; get; }       
+        private FillVariant selectedFillVariant;
+        public FillVariant SelectedFillVariant 
         {
-            ["Парк 1"] = null,            
-            ["Парк 2"] = null
-        };           
+            set
+            {
+                if (value != selectedFillVariant)
+                {
+                    selectedFillVariant = value;
+                    FillCleanSelectedVariant(comboFillVariant);                        
+                }
+            }
+        }
 
         // константа используемая при первичной инициализации изображения 
         static readonly double scaleFactor = 2.0;
@@ -53,19 +62,19 @@ namespace RailwayStation
         public MainWindow()
         {   
             prepareBindColorsCombo();
+            prepareBindFillVariantsCombo();
             this.DataContext = this;                     
-            InitializeComponent();            
-            
+            InitializeComponent();  
 
             // увеличиваем масштаб изначальной схемы (задаём множитель для координат)
             Point.scaleFactor = scaleFactor;
                         
-            var park = new Park(scaleFactor);
-            DrawParkLabelOutline(park, fillVariants.Keys.ElementAt(0));
+            var park = new Park(scaleFactor);            
+            DrawParkLabelOutline(park, FillVariants.ElementAt(1));
             
             // клонируем первый парк со смещением вправо вниз на 90
             var park2 = park.CreateCopyWithShift(x: 90, y: 90);
-            DrawParkLabelOutline(park2, fillVariants.Keys.ElementAt(1));
+            DrawParkLabelOutline(park2, FillVariants.ElementAt(2));
         }
         private void prepareBindColorsCombo()
         {
@@ -75,17 +84,24 @@ namespace RailwayStation
              ColorItems.Add(new ColorItem{ Name = "Синий", brush = Brushes.LightBlue });
              ColorItems.Add(new ColorItem{ Name = "Красный", brush = Brushes.LightCoral });
         }
+        private void prepareBindFillVariantsCombo()
+        {
+             FillVariants = new ObservableCollection<FillVariant>();
+             FillVariants.Add(new FillVariant{ Name = "Вариант заливки" });
+             FillVariants.Add(new FillVariant{ Name = "Парк 1" });
+             FillVariants.Add(new FillVariant{ Name = "Парк 2" });
+        }
         // Рисование элементов парка, подпись и подготовка внешнего контура для последующей заливки
-        private void DrawParkLabelOutline(Park park, string parkKey)
+        private void DrawParkLabelOutline(Park park, FillVariant fillVariant)
         {
             // вычисление и сохранение внешнего контура
             Polygon parkField = park.Outline;
-            fillVariants[parkKey] = parkField;            
+            fillVariant.ParkField = parkField;            
             canvas1.Children.Add(parkField);
             
             // инициализация и размещение по центру фигуры текстовой подписи
             TextBlock textBlock = new TextBlock();
-            textBlock.Text = parkKey;
+            textBlock.Text = fillVariant.Name;
             textBlock.FontSize = 20;                                   
             var center = park.GetRectCenter();
             Canvas.SetLeft(textBlock, center.x);
@@ -98,37 +114,22 @@ namespace RailwayStation
             {
                 canvas1.Children.Add(uIElement);
             }
-        }
-        private void FillVariantSelectedHandler(object sender, RoutedEventArgs e)
-        {
-            var comboBox = (ComboBox)sender;                                    
-            FillCleanSelectedVariant(comboBox);
-        }
-        // заливка выбранного варианта и очистка остальных/всех (если не выбран ни один вариант)
+        }        
+        // заливка выбранного варианта и очистка остальных - либо вообще всех, если не выбран ни один вариант
         private void FillCleanSelectedVariant(ComboBox comboBox)
         {
-            // заглушка до первичной инициализации
+            // заглушка при вызове до первичной инициализации
             if (comboBox==null)
             {
                 return;
-            }                        
-            var selectedItem = (comboBox.SelectedItem as ComboBoxItem).Content.ToString();
-            if (selectedColorItem.Name == "Цвет" || selectedItem == (comboBox.Items.GetItemAt(0) as ComboBoxItem).Content.ToString())
-            {                
-                foreach(var fillVariant in fillVariants)
-                {
-                    // для установки выбранного значения по умолчанию до инициализации вариантов
-                    if (fillVariant.Value != null) 
-                    {
-                        fillVariant.Value.Fill = null;
-                    }
-                }
-            }
-            else
+            } 
+            // устанавливаем цвет выбранного варианта (сработает вхолостую если это опция по умолчанию "Варианты заливки")                                   
+            selectedFillVariant.CheckSetFilling(selectedColorItem.brush);
+            // очищаем все остальные варианты
+            var otherVariants = FillVariants.Where(fv => fv != selectedFillVariant);
+            foreach(var fillVariant in otherVariants)
             {
-                fillVariants[selectedItem].Fill = selectedColorItem.brush;
-                string otherKey = fillVariants.Keys.Where(k => k!=selectedItem).Single();
-                fillVariants[otherKey].Fill = null;            
+                fillVariant.CheckSetFilling(null);
             }
         }
 
@@ -139,7 +140,6 @@ namespace RailwayStation
             {
                 return; // принудительная блокировка уменьшения масштаба до того как фигура исчезнет
             }
-
             // адаптивный шаг коэффициента трансформации обратно пропорционален первоначальному масштабу
             // это нужно для более плавного изменения изначально больших объектов
             dynamicScaleFactor += ((e.Delta > 0)?  1.0 : -1.0)/(2*scaleFactor);
