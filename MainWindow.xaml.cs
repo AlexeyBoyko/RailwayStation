@@ -25,7 +25,21 @@ namespace RailwayStation
     public partial class MainWindow : Window
     {
         public ObservableCollection<ColorItem> ColorItems { set; get; }
-        public ColorItem SelectedColorItem { set; get; }        
+        private ColorItem selectedColorItem;
+        public ColorItem SelectedColorItem {             
+            set
+            {
+                if (value != selectedColorItem)
+                    {
+                        selectedColorItem = value;
+                        // InitializeComponent инициализирует comboFillVariant позже чем comboColor
+                        if (comboFillVariant!=null)
+                        {
+                            FillCleanSelectedVariant(comboFillVariant);
+                        }
+                    }
+            }  
+        }        
         private Dictionary<string, Polygon> fillVariants = new Dictionary<string, Polygon>()
         {
             ["Парк 1"] = null,            
@@ -85,21 +99,12 @@ namespace RailwayStation
                 canvas1.Children.Add(uIElement);
             }
         }
-        private void ColorSelectedHandler(object sender, RoutedEventArgs e)
-        {            
-            // заглушка до первичной инициализации
-            if (comboFillVariant!=null)
-            {
-                FillCleanSelectedVariant(comboFillVariant);
-            }             
-        }
-
         private void FillVariantSelectedHandler(object sender, RoutedEventArgs e)
         {
             var comboBox = (ComboBox)sender;                                    
             FillCleanSelectedVariant(comboBox);
         }
-        // заливка выбранного варианта и очистка невыбранных
+        // заливка выбранного варианта и очистка остальных/всех (если не выбран ни один вариант)
         private void FillCleanSelectedVariant(ComboBox comboBox)
         {
             // заглушка до первичной инициализации
@@ -108,7 +113,7 @@ namespace RailwayStation
                 return;
             }                        
             var selectedItem = (comboBox.SelectedItem as ComboBoxItem).Content.ToString();
-            if (SelectedColorItem.Name == "Цвет" || selectedItem == (comboBox.Items.GetItemAt(0) as ComboBoxItem).Content.ToString())
+            if (selectedColorItem.Name == "Цвет" || selectedItem == (comboBox.Items.GetItemAt(0) as ComboBoxItem).Content.ToString())
             {                
                 foreach(var fillVariant in fillVariants)
                 {
@@ -121,7 +126,7 @@ namespace RailwayStation
             }
             else
             {
-                fillVariants[selectedItem].Fill = SelectedColorItem.brush;
+                fillVariants[selectedItem].Fill = selectedColorItem.brush;
                 string otherKey = fillVariants.Keys.Where(k => k!=selectedItem).Single();
                 fillVariants[otherKey].Fill = null;            
             }

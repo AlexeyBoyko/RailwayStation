@@ -26,12 +26,11 @@
                   ItemsSource="{Binding ColorItems}"                   
                   SelectedItem="{Binding SelectedColorItem}"                  
                   SelectedIndex="0"
-                  SelectionChanged="ColorSelectedHandler">                  
-            <!--                 
-                x:Name="comboColor"                
-                SelectedItem="{Binding SelectedColorItem, Mode=OneWayToSource}"
+                  >                  
+            <!--  
+                SelectionChanged="ColorSelectedHandler"               
                 SelectedValuePath="SelectedItem"                
-                <ComboBoxItem>Цвет</ComboBoxItem>            
+                x:Name="comboColor"                             
             <ComboBox.ItemTemplate>  
                 <DataTemplate>  
                     <StackPanel Orientation="Horizontal">                          
