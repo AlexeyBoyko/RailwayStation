@@ -15,10 +15,18 @@ namespace RailwayStation
     /// Interaction logic for App.xaml
     /// </summary>
     public partial class App : Application
-    {     
-        // метод для получения произвольного простого пути в графе
-        // используется для создания целостной обводки соединительных путей (при рисовании обводки отдельными линиями на поворотах возникают прорехи)
-        public static List<int> FindSimplePath(int[,] edges, int currentV, bool startPoint, 
+    {
+        /// <summary>
+        /// метод для получения произвольного простого пути в графе
+        /// используется для создания целостной обводки соединительных путей (при рисовании обводки отдельными линиями на поворотах возникают прорехи)
+        /// </summary>
+        /// <param name="edges">матрица смежности графа, кодирующая его "рёбра"</param>
+        /// <param name="currentV">индекс текущей вершины</param>
+        /// <param name="isStartPoint">признак того что currentV является начальной точкой пути (т.е. вызов метода нерекурсивный)</param>
+        /// <param name="alreadyVisited">множество уже пройденных (включенных в один из путей) вершин</param>
+        /// <param name="currentPath">список вершин для построения текущего пути в рекурсии</param>
+        /// <returns>список вершин составляющих простой путь из точки currentV (либо содержащий её)</returns>        
+        public static List<int> FindSimplePath(int[,] edges, int currentV, bool isStartPoint, 
                                                 HashSet<int> alreadyVisited, List<int> currentPath)
         {        
             alreadyVisited.Add(currentV);
@@ -32,10 +40,10 @@ namespace RailwayStation
                 // для начальной точки (первого уровня рекурсии) допустимо построение пути до уже посещённой вершины,
                 // т.к. к одной точке могут примыкать несколько разных путей
                 // однако на следующем уровне рекурсии обход остановится в этой точке
-                (startPoint || !alreadyVisited.Contains(i))) 
+                (isStartPoint || !alreadyVisited.Contains(i))) 
                 {
                     // для начальной точки пробуем два направления обхода
-                    if (startPoint)
+                    if (isStartPoint)
                     {
                         // сначала строим путь в одну сторону
                         if(oneSidePath.Count==0)
@@ -58,7 +66,7 @@ namespace RailwayStation
                 }
             }
             // возврат параметра из рекурсии
-            if (startPoint == false) 
+            if (isStartPoint == false) 
             {
                 return currentPath;
             }
@@ -78,6 +86,10 @@ namespace RailwayStation
                 return oneSidePath;
             }
         }   
+        /// <summary>
+        /// инициализация точек станционного парка
+        /// </summary>
+        /// <returns></returns>
         public static Point[] InitPoints()
         {
             return new Point[] { new(0, 10), new(10, 10), new(170, 10), new(180, 20), new(200, 20), new(210, 40), new(220, 40),
@@ -86,9 +98,13 @@ namespace RailwayStation
                 ,new(250, 70), new(100, 100)
             };            
         }
+        /// <summary>
+        /// инициализация линий станционного парка на основе имеющихся точек
+        /// </summary>
+        /// <param name="points"></param>
+        /// <returns></returns>
         public static Line[] InitLines(Point[] points)
-        {
-            // инициализируем линии станционного парка
+        {            
             return new Line[] 
             {
 
@@ -153,11 +169,17 @@ namespace RailwayStation
             };
         }
     }    
+    /// <summary>
+    /// модель данных для комбобокса выбора цвета
+    /// </summary>
     public class ColorItem
     {        
         public string Name { set; get; }
         public SolidColorBrush brush;        
     }
+    /// <summary>
+    /// модель данных для комбобокса выбора варианта заливки
+    /// </summary>
     public class FillVariant
     {
         private Polygon parkField;
@@ -170,8 +192,11 @@ namespace RailwayStation
                 parkField = value;
             }          
         }
-        // метод для заливки с предварительной проверкой на null
-        // сработает вхолостую если это опция по умолчанию "Варианты заливки"         
+        /// <summary>
+        /// метод для заливки с предварительной проверкой на null
+        /// сработает вхолостую для опцию по умолчанию "Варианты заливки"         
+        /// </summary>
+        /// <param name="brush">кисть с заданным цветом</param>        
         public void CheckSetFilling(SolidColorBrush brush)
         {
             // это нужно для опции по умолчанию (Варианты заливки)
@@ -185,6 +210,9 @@ namespace RailwayStation
     {
         public string name;
         private Polygon outline;
+        /// <summary>
+        /// многоугольник составляющий внешний контур парка
+        /// </summary>
         public Polygon Outline
         {
             get { return outline; }
@@ -207,13 +235,22 @@ namespace RailwayStation
             lines = App.InitLines(points);                                    
             InitOutline();
         }
-        
+        /// <summary>
+        /// клонирование парка со смещением
+        /// </summary>
+        /// <param name="name">имя парка (для подписи) и варианта заливки в комбобоксе</param>
+        /// <param name="x">смещение по горизонтали</param>
+        /// <param name="y">смещение по вертикали</param>
+        /// <returns>новый парк</returns>
         public Park CreateCopyWithShift(string name, int x, int y)
         {
             Point[] shiftedPoints = points.Select(p => new Point((int)(p.X/scaleFactor) + x, (int)(p.Y/scaleFactor) + y)).ToArray();            
             return new Park(shiftedPoints, scaleFactor, name);
         }
-        // центр описывающего прямоугольника
+        /// <summary>
+        /// ищем центр описывающего парк прямоугольника
+        /// </summary>
+        /// <returns>кортеж (tuple) с координатами точки</returns>
         public (double x, double y) GetRectCenter()
         {
             var result = (x: -1.0, y: -1.0);
@@ -225,6 +262,9 @@ namespace RailwayStation
             result.y = (minY + maxY)/2;
             return result;
         }
+        /// <summary>
+        /// подготовка визуальных элементов для размещения на холсте
+        /// </summary>        
         public List<UIElement> Draw()
         {
             List<UIElement> uIElements = new List<UIElement>();
@@ -246,11 +286,13 @@ namespace RailwayStation
             
             // Обводим серым цветом соединительные/ходовые линии
             int thickness = (int)(5 * scaleFactor);
-            var passageWays = lines.Where(l => l.IsPassageWay); 
-            var passPoints = passageWays.SelectMany(l=>l.points).Distinct();
-            // вспомогательная матрица смежности
+            // подмножество соединительных путей парка
+            var passageWays = lines.Where(l => l.IsPassageWay);
+            // подмножество точек соединительных путей парка
+            var passPoints = passageWays.SelectMany(l=> new Point[2] { l.A, l.B }).Distinct();
+            // вспомогательная матрица смежности графа
             var adjacencyMatrix = new int[points.Length, points.Length];
-            // заполняем матрицу только для соединительных/ходовых линий
+            // заполняем данные только по соединительным/ходовым линиям
             foreach(Line line in passageWays)
             {
                 int pointA = Array.IndexOf(points, line.A);
@@ -264,8 +306,9 @@ namespace RailwayStation
                 int pointIndex = Array.IndexOf(points, passPoint);
                 if (!alreadyVisited.Contains(pointIndex))
                 {
-                    List<int> path = App.FindSimplePath(adjacencyMatrix, pointIndex, startPoint: true, alreadyVisited, new List<int>());
-                
+                    // находим простой путь в подграфе включающий текущую точку
+                    List<int> path = App.FindSimplePath(adjacencyMatrix, pointIndex, isStartPoint: true, alreadyVisited, new List<int>());
+                    // строим ломаную линую из точек найденного пути
                     Polyline polyline = new Polyline();
                     PointCollection pointCollection = new PointCollection(path.Count); 
                     foreach(var pointInd in path)
@@ -276,14 +319,18 @@ namespace RailwayStation
                     polyline.Points = pointCollection;
                     polyline.Stroke = Brushes.Gray;
                     polyline.StrokeThickness = thickness;
+                    // делаем линию полупрозрачной
                     polyline.Opacity = 0.5;
                     uIElements.Add(polyline);
                 }
             }
             return uIElements;  
         }
-        // обход по внешнему периметру графа по часовой стрелке посредством выбора всегда самого левого "соседа"
-        private List<int> FindOuterLoop()
+        /// <summary>
+        /// обход по внешнему периметру графа по часовой стрелке посредством выбора всегда самого левого "соседа"
+        /// </summary>
+        /// <returns>список вершин внешнего контура</returns>
+        public List<int> FindOuterLoop()
         {   
             List<int> outerLoop = new List<int>();
             // берём произвольный "лист" графа (точка на перегоне, не относящаяся к станции)        
@@ -301,7 +348,9 @@ namespace RailwayStation
             while (b != begin); 
             return outerLoop;        
         }
-        // Инициализация внешнего контура парка для последующей заливки выбранным цветом
+        /// <summary>
+        /// Инициализация многоугольника внешнего контура парка для последующей передачи в интерфейс и заливки выбранным цветом
+        /// </summary>
         private void InitOutline() 
         {
             List<int> outerLoop = FindOuterLoop();
@@ -311,7 +360,9 @@ namespace RailwayStation
             outline.Points = outerLoopPointCollection;                        
         }
     }
-    
+    /// <summary>
+    /// Класс точки
+    /// </summary>
     public class Point
     {
         public static double scaleFactor = 1;
@@ -408,6 +459,9 @@ namespace RailwayStation
             return (a.x - p.x) * (b.y - p.y) - (a.y - p.y) * (b.x - p.x);
         }
     }
+    /// <summary>
+    /// Класс линии соединяющей две точки
+    /// </summary>
     public class Line
     {
         private Point a, b;
@@ -419,8 +473,6 @@ namespace RailwayStation
         {
             get {return b;}
         }
-
-        public Point[] points;
         
         private bool isPassageWay = false;
         /// <summary>
@@ -436,8 +488,7 @@ namespace RailwayStation
             this.a = a;
             this.b = b;
             a.AddNeighbor(b);
-            b.AddNeighbor(a);
-            points = new Point[2] { a, b };
+            b.AddNeighbor(a);            
         }
         public Line(Point a, Point b, bool isPassageWay) : this(a, b)
         {
