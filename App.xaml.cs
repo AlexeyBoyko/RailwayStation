@@ -219,7 +219,11 @@ namespace RailwayStation
         }
         private double scaleFactor;        
         private readonly Point[] points;
-        private readonly Line[] lines;        
+        private readonly Line[] lines;
+        public int ParkSize
+        {
+            get { return points.Count(); }
+        }
         public Park(double scaleFactor, string name) : this(App.InitPoints(), scaleFactor, name)
         {
         }
