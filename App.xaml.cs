@@ -171,8 +171,10 @@ namespace RailwayStation
             }          
         }
         // метод для заливки с предварительной проверкой на null
+        // сработает вхолостую если это опция по умолчанию "Варианты заливки"         
         public void CheckSetFilling(SolidColorBrush brush)
         {
+            // это нужно для опции по умолчанию (Варианты заливки)
             if (parkField!=null)
             {
                 parkField.Fill = brush;
@@ -181,6 +183,7 @@ namespace RailwayStation
     }
     public class Park
     {
+        public string name;
         private Polygon outline;
         public Polygon Outline
         {
@@ -189,21 +192,22 @@ namespace RailwayStation
         private double scaleFactor;        
         private readonly Point[] points;
         private readonly Line[] lines;        
-        public Park(double scaleFactor) : this(App.InitPoints(), scaleFactor)
+        public Park(double scaleFactor, string name) : this(App.InitPoints(), scaleFactor, name)
         {
         }
-        private Park(Point[] points, double scaleFactor)
+        private Park(Point[] points, double scaleFactor, string name)
         {
+            this.name = name;
             this.scaleFactor = scaleFactor;
             this.points = points;            
             lines = App.InitLines(points);                                    
             InitOutline();
         }
         
-        public Park CreateCopyWithShift(int x, int y)
+        public Park CreateCopyWithShift(string name, int x, int y)
         {
             Point[] shiftedPoints = points.Select(p => new Point((int)(p.X/scaleFactor) + x, (int)(p.Y/scaleFactor) + y)).ToArray();            
-            return new Park(shiftedPoints, scaleFactor);
+            return new Park(shiftedPoints, scaleFactor, name);
         }
         // центр описывающего прямоугольника
         public (double x, double y) GetRectCenter()

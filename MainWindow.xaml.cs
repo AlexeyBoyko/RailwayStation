@@ -24,6 +24,9 @@ namespace RailwayStation
     /// </summary>
     public partial class MainWindow : Window
     {
+        // белый цвет заливки по умолчанию позволяет зумировать выбранную область (парк) на произвольной точке внутри
+        // также это упрощает логику обработки выбранного цвета за счёт отсутствия "бесцветного" варианта. 
+        private SolidColorBrush defaultColor = Brushes.White;
         public ObservableCollection<ColorItem> ColorItems { set; get; }
         private ColorItem selectedColorItem;
         public ColorItem SelectedColorItem 
@@ -54,54 +57,58 @@ namespace RailwayStation
                 }
             }
         }
-
         // константа используемая при первичной инициализации изображения 
         static readonly double scaleFactor = 2.0;
-        // динамически изменяемый масштаб
+        // динамически изменяемый колесиком мышки масштаб 
         static double dynamicScaleFactor = 1.0;        
         public MainWindow()
         {   
-            prepareBindColorsCombo();
-            prepareBindFillVariantsCombo();
-            this.DataContext = this;                     
-            InitializeComponent();  
-
             // увеличиваем масштаб изначальной схемы (задаём множитель для координат)
             Point.scaleFactor = scaleFactor;
-                        
-            var park = new Park(scaleFactor);            
-            DrawParkLabelOutline(park, FillVariants.ElementAt(1));
-            
+            // инициализируем структуру парков 
+            var park1 = new Park(scaleFactor, "Парк 1");                        
             // клонируем первый парк со смещением вправо вниз на 90
-            var park2 = park.CreateCopyWithShift(x: 90, y: 90);
-            DrawParkLabelOutline(park2, FillVariants.ElementAt(2));
+            var park2 = park1.CreateCopyWithShift("Парк 2", x: 90, y: 90);
+            // заполняем комбобокс вариантами заливки со ссылками на соответствующие контуры
+            prepareBindFillVariantsCombo(park1, park2);
+
+            // комбобокс для выбора цвета
+            prepareBindColorsCombo();           
+            // устанавливаем класс содержащий контекст данных для заполнения комбобоксов
+            this.DataContext = this;
+            // создаётся окно приложения                     
+            InitializeComponent();  
+            // рисуем парки и подписи к ним, а также контуры для последующей заливки
+            DrawParkLabelOutline(park1);
+            DrawParkLabelOutline(park2);
         }
         private void prepareBindColorsCombo()
         {
              ColorItems = new ObservableCollection<ColorItem>();
-             ColorItems.Add(new ColorItem{ Name = "Цвет" });
+             ColorItems.Add(new ColorItem{ Name = "Цвет", brush = defaultColor });
              ColorItems.Add(new ColorItem{ Name = "Зелёный", brush = Brushes.LightGreen });
              ColorItems.Add(new ColorItem{ Name = "Синий", brush = Brushes.LightBlue });
              ColorItems.Add(new ColorItem{ Name = "Красный", brush = Brushes.LightCoral });
         }
-        private void prepareBindFillVariantsCombo()
+        private void prepareBindFillVariantsCombo(params Park[] parks)
         {
              FillVariants = new ObservableCollection<FillVariant>();
              FillVariants.Add(new FillVariant{ Name = "Вариант заливки" });
-             FillVariants.Add(new FillVariant{ Name = "Парк 1" });
-             FillVariants.Add(new FillVariant{ Name = "Парк 2" });
+             foreach(Park park in parks)
+             {
+                FillVariants.Add(new FillVariant{ Name = park.name, ParkField = park.Outline});
+             }             
         }
         // Рисование элементов парка, подпись и подготовка внешнего контура для последующей заливки
-        private void DrawParkLabelOutline(Park park, FillVariant fillVariant)
+        private void DrawParkLabelOutline(Park park)
         {
-            // вычисление и сохранение внешнего контура
-            Polygon parkField = park.Outline;
-            fillVariant.ParkField = parkField;            
+            // помещение внешнего контура на холст (невидимо, без прорисовки)
+            Polygon parkField = park.Outline;            
             canvas1.Children.Add(parkField);
             
             // инициализация и размещение по центру фигуры текстовой подписи
             TextBlock textBlock = new TextBlock();
-            textBlock.Text = fillVariant.Name;
+            textBlock.Text = park.name;
             textBlock.FontSize = 20;                                   
             var center = park.GetRectCenter();
             Canvas.SetLeft(textBlock, center.x);
@@ -115,24 +122,19 @@ namespace RailwayStation
                 canvas1.Children.Add(uIElement);
             }
         }        
-        // заливка выбранного варианта и очистка остальных - либо вообще всех, если не выбран ни один вариант
+        // заливка выбранного варианта и "очистка" остальных 
+        // на деле отсутствие заливки есть не что иное как заливка белым цветом, который выбран по умолчанию
         private void FillCleanSelectedVariant(ComboBox comboBox)
-        {
-            // заглушка при вызове до первичной инициализации
-            if (comboBox==null)
-            {
-                return;
-            } 
-            // устанавливаем цвет выбранного варианта (сработает вхолостую если это опция по умолчанию "Варианты заливки")                                   
+        {           
+            // устанавливаем цвет "выбранного варианта" (т.е. делаем фиктивный вызов если он не выбран)                                              
             selectedFillVariant.CheckSetFilling(selectedColorItem.brush);
-            // очищаем все остальные варианты
+            // очищаем (вернее, заливаем цветом по умолчанию) все остальные варианты
             var otherVariants = FillVariants.Where(fv => fv != selectedFillVariant);
             foreach(var fillVariant in otherVariants)
             {
-                fillVariant.CheckSetFilling(null);
+                fillVariant.CheckSetFilling(defaultColor);
             }
         }
-
         // зумирование рисунка колесиком мышки
         private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)
         {            
@@ -149,8 +151,6 @@ namespace RailwayStation
                 ScaleX = dynamicScaleFactor,
                 ScaleY = dynamicScaleFactor
             };
-        }       
-    
-    
+        }      
     }    
 }
