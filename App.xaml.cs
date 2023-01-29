@@ -197,6 +197,10 @@ namespace RailwayStation
         }
         private Park(Point[] points, double scaleFactor, string name)
         {
+            if (Point.scaleFactor != scaleFactor)
+            {
+                throw new Exception("Коэффициент scaleFactor не совпадает в Point и Park!");
+            }
             this.name = name;
             this.scaleFactor = scaleFactor;
             this.points = points;            
