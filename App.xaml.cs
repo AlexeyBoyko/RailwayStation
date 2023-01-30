@@ -455,8 +455,7 @@ namespace RailwayStation
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
-        /// <param name="p"></param>
-        /// <returns>если при прохождении от A к P в точке B поворачиваем налево, то значение будет отрицательное</returns>
+        /// <param name="p"></param>        
         private static float GetPointLineSide(Point a, Point b, Point p)
         {
             // фактически это скалярное произведение вектора AP на нормальный вектор прямой, проходящей через точки BP 

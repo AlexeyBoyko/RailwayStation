@@ -21,7 +21,7 @@ namespace RailwayStation.Tests
             Assert.True(parkOutline.Count <= parkSize);
         }
         [StaFact]
-        public void OutlinePoints()
+        public void OutlinePointsIndexes()
         {
             var park = new Park(1, "Парк");
             List<int> parkOutline = park.FindOuterLoop();
@@ -29,6 +29,19 @@ namespace RailwayStation.Tests
             int parkSize = park.ParkSize;
             // индексы вершины составляющие внешний контур должны быть в пределах размеров парка
             Assert.All(parkOutline, item => Assert.True(item < parkSize));
+        }
+        [StaFact]
+        public void OutlineSequence()
+        {
+            var park = new Park(1, "Парк");
+            List<int> parkOutline = park.FindOuterLoop();
+            List<int> expectedOutline = new List<int>();
+            // для текущей схемы контур должен содержать последовательно вершины от 1 до 20
+            for(int i=1; i<=20; i++)
+            {
+                expectedOutline.Add(i);
+            }
+            Assert.Equal(expectedOutline, parkOutline);
         }
     }
 }
