@@ -5,7 +5,7 @@ VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RailwayStation", "RailwayStation.csproj", "{4B2C47E8-74D2-407E-A0AF-5A68880393EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RailwayStation.Test", "RailwayStation.Test\RailwayStation.Test.csproj", "{5B248A4E-FE47-4A3E-8BD0-163C9E610790}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RailwayStation.Tests", "RailwayStation.Tests\RailwayStation.Tests.csproj", "{428AF6D1-E82E-4DD3-9874-8D9BD558B96D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{4B2C47E8-74D2-407E-A0AF-5A68880393EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4B2C47E8-74D2-407E-A0AF-5A68880393EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4B2C47E8-74D2-407E-A0AF-5A68880393EF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5B248A4E-FE47-4A3E-8BD0-163C9E610790}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5B248A4E-FE47-4A3E-8BD0-163C9E610790}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5B248A4E-FE47-4A3E-8BD0-163C9E610790}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5B248A4E-FE47-4A3E-8BD0-163C9E610790}.Release|Any CPU.Build.0 = Release|Any CPU
+		{428AF6D1-E82E-4DD3-9874-8D9BD558B96D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{428AF6D1-E82E-4DD3-9874-8D9BD558B96D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{428AF6D1-E82E-4DD3-9874-8D9BD558B96D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{428AF6D1-E82E-4DD3-9874-8D9BD558B96D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
