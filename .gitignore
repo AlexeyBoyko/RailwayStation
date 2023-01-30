@@ -1,7 +1,6 @@
 /.vs
 /.vscode
-/bin
-/obj
+bin/
+obj/
 /RailwayStation.csproj.user
-/Тестовое задание.pdf
 Тестовое задание.pdf
